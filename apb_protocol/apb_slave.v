@@ -1,39 +1,41 @@
 // APB Slave Module
-module apb_slave (
-    input wire clk,
-    input wire rst_n,
+module apb_slave(
+    input clk,
+    input rst_n,
     
     // APB Signals
-    input wire [31:0] paddr,
-    input wire penable,
-    input wire pwrite,
-    input wire [31:0] pwdata,
+    input [31:0] paddr,
+    input penable,
+    input pwrite,
+    input [31:0] pwdata,
     output reg [31:0] prdata,
     output reg pready,
-    input wire psel
+    input psel
 );
 
     // Internal Memory for Slave
     reg [31:0] slave_memory [0:255];
     
-    // State Machine for Slave Response
-    typedef enum logic [1:0] {
-        IDLE = 2'b00,
-        SETUP = 2'b01,
-        ACCESS = 2'b10
-    } slave_state_t;
+    // State encoding using standard Verilog
+    reg [1:0] current_state;
+    reg [1:0] next_state;
 
-    slave_state_t current_state, next_state;
+    // State definitions
+    parameter IDLE   = 2'b00;
+    parameter SETUP  = 2'b01;
+    parameter ACCESS = 2'b10;
+
+    integer i; // For memory initialization
 
     // State Register
-    always_ff @(posedge clk or negedge rst_n) begin
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             current_state <= IDLE;
             prdata <= 32'h0;
             pready <= 1'b0;
             
             // Initialize memory
-            for (int i = 0; i < 256; i++) begin
+            for (i = 0; i < 256; i = i + 1) begin
                 slave_memory[i] <= 32'h0;
             end
         end else begin
@@ -41,8 +43,8 @@ module apb_slave (
         end
     end
 
-    // Next State and Output Logic
-    always_comb begin
+    // Next State Logic
+    always @(*) begin
         case (current_state)
             IDLE: begin
                 if (psel && !penable) begin

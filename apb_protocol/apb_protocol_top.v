@@ -1,16 +1,16 @@
 // Top-level module for APB Protocol demonstration
-module apb_protocol_top (
-    input wire clk,
-    input wire rst_n,
+module apb_protocol_top(
+    input clk,
+    input rst_n,
     
     // APB Master Signals
-    output wire [31:0] paddr,      // Address
-    output wire penable,           // Enable
-    output wire pwrite,            // Write/Read select
-    output wire [31:0] pwdata,     // Write data
-    input wire [31:0] prdata,      // Read data
-    input wire pready,             // Slave ready signal
-    output wire psel                // Select signal
+    output [31:0] paddr,      // Address
+    output penable,           // Enable
+    output pwrite,            // Write/Read select
+    output [31:0] pwdata,     // Write data
+    input [31:0] prdata,      // Read data
+    input pready,             // Slave ready signal
+    output psel                // Select signal
 );
 
     // Instantiate APB Master

@@ -38,13 +38,17 @@ module apb_protocol_tb;
         // Reset Sequence
         #10 rst_n = 1;
 
-        // Simulation will run automatically based on master's state machine
+        // Optional: Add more test scenarios
         #200 $finish;
     end
 
-    // Optional Waveform Capture
+    // Simulation Output
     initial begin
+        $monitor("Time=%0t paddr=%h pwrite=%b pwdata=%h prdata=%h pready=%b psel=%b", 
+                 $time, paddr, pwrite, pwdata, prdata, pready, psel);
+        
+        // VCD Dump for waveform
         $dumpfile("apb_protocol_tb.vcd");
         $dumpvars(0, apb_protocol_tb);
-    
+    end
 endmodule

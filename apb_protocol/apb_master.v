@@ -1,32 +1,33 @@
 // APB Master Module
-module apb_master (
-    input wire clk,
-    input wire rst_n,
+module apb_master(
+    input clk,
+    input rst_n,
     
     // APB Signals
     output reg [31:0] paddr,
     output reg penable,
     output reg pwrite,
     output reg [31:0] pwdata,
-    input wire [31:0] prdata,
-    input wire pready,
+    input [31:0] prdata,
+    input pready,
     output reg psel
 );
 
-    // APB State Machine States
-    typedef enum logic [1:0] {
-        IDLE = 2'b00,
-        SETUP = 2'b01,
-        ACCESS = 2'b10
-    } apb_state_t;
+    // State encoding using standard Verilog
+    reg [1:0] current_state;
+    reg [1:0] next_state;
 
-    // Internal Signals
-    apb_state_t current_state, next_state;
+    // State definitions
+    parameter IDLE   = 2'b00;
+    parameter SETUP  = 2'b01;
+    parameter ACCESS = 2'b10;
+
+    // Registers for transaction
     reg [31:0] data_to_write;
     reg [31:0] read_data;
 
     // State Register
-    always_ff @(posedge clk or negedge rst_n) begin
+    always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             current_state <= IDLE;
             paddr <= 32'h0;
@@ -39,11 +40,10 @@ module apb_master (
         end
     end
 
-    // Next State and Output Logic
-    always_comb begin
+    // Next State Logic
+    always @(*) begin
         case (current_state)
             IDLE: begin
-                // Initiate a write transaction
                 next_state = SETUP;
                 paddr = 32'h1000;  // Example address
                 pwrite = 1'b1;     // Write operation
@@ -53,14 +53,12 @@ module apb_master (
             end
 
             SETUP: begin
-                // Prepare for access phase
                 next_state = ACCESS;
                 penable = 1'b1;
                 pwdata = data_to_write;
             end
 
             ACCESS: begin
-                // Check if slave is ready
                 if (pready) begin
                     // For read, capture data
                     if (!pwrite) begin
